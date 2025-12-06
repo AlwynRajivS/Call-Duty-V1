@@ -205,7 +205,12 @@ function render(rows){
       <div class="info"><b>Phone:</b> ${r.phone}</div>
 
       <a class="btn callBtn" href="tel:${r.phone}">📞 Call</a>
-      <a class="btn waBtn" href="https://wa.me/91${r.phone}?text=Regarding%20Call%20Duty" target="_blank">💬 WhatsApp</a>
+      <a class="btn waBtn"
+href="https://wa.me/91${r.phone}?text=Dear%20Sir%2FMadam%2C%20Greetings%20from%20Kamaraj%20College%20of%20Engineering%20and%20Technology%20(CoE%20Office).%20Tomorrow%20you%20have%20been%20allotted%20Hall%20Superintendent%20duty.%20Kindly%20confirm%20your%20availability%20by%20replying%20to%20this%20message.%20Thank%20you."
+target="_blank">
+💬 WhatsApp
+</a>
+
 
       <textarea id="c${r.row}">${r.comments||""}</textarea>
       <button class="saveBtn" onclick="save(${r.row})">Save</button>
