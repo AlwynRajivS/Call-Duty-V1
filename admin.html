@@ -94,6 +94,25 @@ tr:nth-child(even){background:#f8fafc;}
 
 <h2>📋 Admin Dashboard - Call Duty</h2>
 
+<!-- CSV DOWNLOAD TEMPLATE -->
+<div class="section">
+  <h3>⬇ Download Template</h3>
+  <button onclick="downloadTemplate()">Download CSV Template</button>
+</div>
+
+<!-- CSV UPLOAD -->
+<div class="section">
+  <h3>⬆ Upload CSV File</h3>
+  <input type="file" id="csvFile" accept=".csv">
+  <select id="mode">
+    <option value="replace">Replace existing</option>
+    <option value="append">Append</option>
+  </select>
+  <button onclick="uploadCsv()">Upload</button>
+  <p id="uploadMsg" class="msg"></p>
+</div>
+
+
 <!-- 📊 SUMMARY -->
 <div class="section">
   <h3>📊 Summary</h3>
@@ -116,24 +135,6 @@ tr:nth-child(even){background:#f8fafc;}
 <div class="section">
   <label><b>🔍 Search (Faculty / College)</b></label>
   <input id="search" placeholder="Type to search..." onkeyup="applyFilters()">
-</div>
-
-<!-- CSV DOWNLOAD TEMPLATE -->
-<div class="section">
-  <h3>⬇ Download Template</h3>
-  <button onclick="downloadTemplate()">Download CSV Template</button>
-</div>
-
-<!-- CSV UPLOAD -->
-<div class="section">
-  <h3>⬆ Upload CSV File</h3>
-  <input type="file" id="csvFile" accept=".csv">
-  <select id="mode">
-    <option value="replace">Replace existing</option>
-    <option value="append">Append</option>
-  </select>
-  <button onclick="uploadCsv()">Upload</button>
-  <p id="uploadMsg" class="msg"></p>
 </div>
 
 <!-- EXCEL DOWNLOAD -->
