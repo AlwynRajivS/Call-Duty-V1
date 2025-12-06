@@ -1,0 +1,232 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  font-family: Inter, system-ui;
+  margin:0;
+  background:#eef2f9;
+  padding:10px;
+  max-width:650px;
+  margin:auto;
+}
+
+/* HEADER */
+.header{
+  background:linear-gradient(135deg,#004aad,#0078ff);
+  color:white;
+  padding:12px;
+  text-align:center;
+  border-radius:10px;
+  font-size:18px;
+  box-shadow:0 3px 10px #0003;
+  margin-bottom:14px;
+}
+
+/* TOP AREA */
+.topBar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+label{
+  font-weight:600;
+  font-size:14px;
+}
+
+/* DATE FIELD */
+#date{
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #cbd5f5;
+  font-size:14px;
+  width:65%;
+}
+
+/* LOGOUT */
+.logout{
+  background:#dc2626;
+  padding:8px 12px;
+  border:0;
+  border-radius:8px;
+  color:white;
+  font-size:14px;
+  cursor:pointer;
+  font-weight:600;
+  width:30%;
+}
+
+/* CARD */
+.card{
+  background:white;
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  box-shadow:0 4px 12px #0001;
+}
+.card.pending{
+  border-left:5px solid #f59e0b;
+}
+.card.done{
+  border-left:5px solid #16a34a;
+  background:#eaffea;
+}
+
+h3{
+  margin:0;
+  font-size:15px;
+}
+.info{
+  font-size:12px;
+  margin:2px 0;
+}
+
+/* BUTTONS */
+.btn{
+  padding:6px 8px;
+  border-radius:6px;
+  font-weight:600;
+  text-decoration:none;
+  display:inline-block;
+  margin-top:6px;
+  font-size:12px;
+}
+.callBtn{
+  background:#0b63d6;
+  color:white;
+}
+.waBtn{
+  background:#25D366;
+  color:white;
+  margin-left:4px;
+}
+
+/* COMMENT BOX */
+textarea{
+  width:100%;
+  margin-top:6px;
+  border-radius:6px;
+  border:1px solid #cbd5f5;
+  padding:8px;
+  font-size:13px;
+  background:#f9f9f9;
+}
+
+/* SAVE BUTTON */
+.saveBtn{
+  background:#2563eb;
+  color:white;
+  padding:7px;
+  border:0;
+  border-radius:6px;
+  font-weight:600;
+  margin-top:6px;
+  cursor:pointer;
+  width:100%;
+  font-size:13px;
+}
+
+/* MESSAGE */
+.msg{
+  color:green;
+  font-size:12px;
+  margin-top:3px;
+}
+
+/* RESPONSIVE DESIGN */
+@media(max-width:450px){
+  .topBar{
+    flex-direction:column;
+    gap:8px;
+  }
+  #date, .logout{
+    width:100%;
+  }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">📞 Faculty Call Duty</div>
+
+<!-- DATE + LOGOUT in same row -->
+<div class="topBar">
+  <input type="date" id="date" onchange="loadData()">
+  <button class="logout" onclick="window.location='index.html'">Logout</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+const user = JSON.parse(sessionStorage.getItem("user"));
+const GAS_URL = "https://script.google.com/macros/s/AKfycby3Y3kynSUure4Ztwlglf4bEAxigD6PVaSV6uVDeTzAGKVxJt9ZK6pdFAsdHVeneb-3/exec";
+
+function loadData(){
+  let d=document.getElementById("date").value;
+  if(!d){ return; }
+
+  let p=d.split("-");
+  d=p[2]+"-"+p[1]+"-"+p[0];
+
+  fetch(GAS_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:`action=getData&date=${d}&email=${user.email}`
+  })
+  .then(r=>r.json())
+  .then(res=>render(res.rows));
+}
+
+function render(rows){
+  let html="";
+  if(!rows.length){
+    document.getElementById("content").innerHTML="<p>No Call Duty Assigned</p>";
+    return;
+  }
+
+  rows.forEach(r=>{
+    let status=(r.comments && r.comments.trim()!=="")?"done":"pending";
+
+    html+=`
+    <div class="card ${status}">
+      <h3>${r.faculty} (${r.session})</h3>
+      <div class="info"><b>College:</b> ${r.college}</div>
+      <div class="info"><b>Phone:</b> ${r.phone}</div>
+
+      <a class="btn callBtn" href="tel:${r.phone}">📞 Call</a>
+      <a class="btn waBtn" href="https://wa.me/91${r.phone}?text=Regarding%20Call%20Duty" target="_blank">💬 WhatsApp</a>
+
+      <textarea id="c${r.row}">${r.comments||""}</textarea>
+      <button class="saveBtn" onclick="save(${r.row})">Save</button>
+      <p id="m${r.row}" class="msg"></p>
+    </div>`;
+  });
+
+  document.getElementById("content").innerHTML=html;
+}
+
+function save(row){
+  let c=document.getElementById("c"+row).value;
+
+  fetch(GAS_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:`action=updateComment&row=${row}&comment=${encodeURIComponent(c)}&email=${user.email}`
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    let m=document.getElementById("m"+row);
+    m.textContent="Saved Successfully!";
+    setTimeout(()=>m.textContent="",2000);
+    loadData();
+  });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Call Duty Login</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+body{
+  margin:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background:linear-gradient(135deg,#001845,#0466c8);
+  font-family:'Poppins',sans-serif;
+}
+
+/* MAIN LOGIN BOX */
+.login-box{
+  width:90%;
+  max-width:380px;
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(16px);
+  padding:28px 32px;
+  border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  animation:fadeIn .7s ease-out;
+  color:#fff;
+}
+
+/* ANIMATION */
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* TITLE */
+h2{
+  text-align:center;
+  font-size:22px;
+  margin-bottom:20px;
+  font-weight:600;
+}
+
+/* INPUT FIELD WRAPPER */
+.inputBox{
+  position:relative;
+  margin-bottom:22px;
+}
+
+/* INPUT FIELD */
+.inputBox input{
+  width:92%;
+  padding:14px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.45);
+  background:rgba(255,255,255,0.18);
+  color:#fff;
+  outline:none;
+  font-size:15px;
+}
+
+/* PLACEHOLDER LABEL */
+.inputBox label{
+  position:absolute;
+  left:14px;
+  top:15px;
+  font-size:14px;
+  opacity:0.8;
+  transition:0.3s;
+}
+
+/* LABEL FLOAT ANIMATION */
+.inputBox input:focus + label,
+.inputBox input:not(:placeholder-shown) + label{
+  top:-9px;
+  font-size:12px;
+  background:#004e9a;
+  padding:3px 6px;
+  border-radius:6px;
+  opacity:1;
+}
+
+/* LOGIN BUTTON */
+button{
+  width:100%;
+  padding:14px;
+  font-size:16px;
+  font-weight:600;
+  border-radius:10px;
+  border:0;
+  cursor:pointer;
+  background:#18e5ff;
+  color:#00253f;
+  margin-top:10px;
+  box-shadow:0 3px 10px rgba(24,229,255,0.4);
+  transition:0.25s;
+}
+button:hover{
+  background:#aaf6ff;
+}
+
+/* ERROR MSG */
+#error{
+  text-align:center;
+  color:#ffb3b3;
+  font-size:14px;
+  margin-top:10px;
+  display:none;
+}
+
+/* RESPONSIVE */
+@media(max-width:450px){
+  h2{font-size:20px;}
+  .login-box{padding:24px;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+  <h2>☎ Call Duty Login</h2>
+
+  <div class="inputBox">
+    <input id="email" type="email" placeholder=" " />
+    <label>Email ID</label>
+  </div>
+
+  <div class="inputBox">
+    <input id="password" type="password" placeholder=" " />
+    <label>Password</label>
+  </div>
+
+  <button onclick="login()">LOGIN</button>
+  <p id="error">Invalid Login! Try Again</p>
+</div>
+
+
+<script>
+/************  API LINK  ************/
+const API_URL = "https://script.google.com/macros/s/AKfycbxTc6S4JUGur6tTBXHuN3R-CzbH92AtNR3nugXir7pubIvDPPASaesqNY92AyukO_xC/exec";
+
+/************ LOGIN ************/
+function login(){
+  let fd = new FormData();
+  fd.append("action","login");
+  fd.append("email", document.getElementById("email").value.trim());
+  fd.append("password", document.getElementById("password").value.trim());
+
+  fetch(API_URL,{method:"POST",body:fd})
+  .then(r=>r.json())
+  .then(res=>{
+    
+    if(res.success){
+      
+      sessionStorage.setItem("user", JSON.stringify(res));
+
+      if(res.role.toLowerCase() === "admin"){
+        window.location="admin.html";
+        return;
+      }
+
+      if(res.role.toLowerCase() === "faculty"){
+        window.location="faculty.html";
+        return;
+      }
+    }
+    showError();
+  });
+}
+
+/************ INVALID MSG ************/
+function showError(){
+  let e = document.getElementById("error");
+  e.style.display="block";
+  setTimeout(()=>e.style.display="none",2500);
+}
+</script>
+
+</body>
+</html>

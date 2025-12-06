@@ -1,0 +1,333 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  font-family: Inter,system-ui;
+  margin:0;
+  background:#f1f5f9;
+  padding:12px;
+}
+
+/* SECTION BOX */
+.section{
+  background:white;
+  padding:12px;
+  margin-bottom:14px;
+  border-radius:12px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.12);
+}
+
+/* HEADINGS */
+h2,h3{margin:0 0 8px;font-weight:600;color:#0c214d;}
+
+/* BUTTONS */
+button{
+  padding:10px 16px;
+  border:none;
+  border-radius:8px;
+  background:#005bbb;
+  color:white;
+  cursor:pointer;
+  font-weight:600;
+}
+button:hover{background:#024a97;}
+
+/* INPUTS */
+input,select{
+  width:100%;
+  padding:9px;
+  border-radius:8px;
+  border:1px solid #d1d5db;
+  margin-top:4px;
+  font-size:14px;
+}
+
+/*********************  DASHBOARD STAT  **********************/
+.dashboard-box{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.stat{
+  flex:1 1 150px;
+  background:#f9fafc;
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
+  box-shadow:0 3px 6px rgba(0,0,0,0.05);
+  font-size:14px;
+  font-weight:600;
+}
+
+/*********************  SEARCH STICKY HEADER  **********************/
+.search-block{
+  position:sticky;
+  top:0;
+  background:white;
+  z-index:10;
+  padding:8px 6px;
+  border-radius:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  margin-bottom:8px;
+}
+.search-input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #cbd5e1;
+}
+
+/********************* TABLE ************************/
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+th{
+  background:#e2e8f0;
+  font-weight:700;
+}
+td,th{
+  border:1px solid #dcdfe4;
+  padding:6px;
+}
+tr:nth-child(even){background:#f8fafc;}
+
+/********************* RESPONSIVE **********************/
+@media(max-width:450px){
+  table{font-size:12px;}
+}
+.msg{font-size:13px;color:#475569;}
+</style>
+</head>
+
+<body>
+
+<h2>📋 Admin Dashboard - Call Duty</h2>
+
+<!-- 📊 SUMMARY -->
+<div class="section">
+  <h3>📊 Summary</h3>
+  <div class="dashboard-box">
+    <div class="stat">Total<br><span id="s1"></span></div>
+    <div class="stat">Faculties<br><span id="s2"></span></div>
+    <div class="stat">Colleges<br><span id="s3"></span></div>
+    <div class="stat">Completed<br><span id="s4"></span></div>
+    <div class="stat">Pending<br><span id="s5"></span></div>
+  </div>
+</div>
+
+<!-- DOWNLOAD TEMPLATE -->
+<div class="section">
+  <h3>⬇ CSV Template</h3>
+  <button onclick="downloadTemplate()">Download Template</button>
+</div>
+
+<!-- UPLOAD -->
+<div class="section">
+  <h3>⬆ Upload CSV File</h3>
+  <input type="file" id="csvFile" accept=".csv">
+  <select id="mode">
+    <option value="replace">Replace existing</option>
+    <option value="append">Append</option>
+  </select>
+  <button onclick="uploadCsv()">Upload</button>
+  <p id="uploadMsg" class="msg"></p>
+</div>
+
+<!-- EXCEL -->
+<div class="section">
+  <button onclick="downloadExcel()">📥 Download Full Records</button>
+</div>
+
+
+
+<!-- SEARCH -->
+<div class="section search-block">
+  <input id="search" class="search-input" placeholder="🔍 Search faculty or college..." onkeyup="filterRecords()">
+</div>
+
+<!-- RECORD TABLE -->
+<div class="section" style="padding:6px;">
+  <div id="records"></div>
+</div>
+
+<button onclick="window.location='index.html'">Logout</button>
+
+
+<script>
+const GAS_URL="https://script.google.com/macros/s/AKfycbzt2aN9TjsZQk0F7cI4D1IA1QyJ_74IaB3ThQYsWVC0eC8Ksg1OsAm-zh6OzM8UiMuk/exec";
+
+
+/******** LOAD DASHBOARD *********/
+function loadDashboard(){
+  fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"action=dashboard"})
+  .then(r=>r.json()).then(res=>{
+    s1.textContent=res.total;
+    s2.textContent=res.faculty;
+    s3.textContent=res.colleges;
+    s4.textContent=res.completed;
+    s5.textContent=res.pending;
+  });
+}
+
+/******** DOWNLOAD TEMPLATE ********/
+function downloadTemplate(){
+  fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"action=downloadTemplate"})
+  .then(r=>r.json()).then(res=>{
+    const blob=new Blob([res.csv],{type:"text/csv"});
+    const link=document.createElement("a");
+    link.href=URL.createObjectURL(blob);
+    link.download=res.filename;
+    link.click();
+  });
+}
+
+/******** UPLOAD CSV ********/
+function uploadCsv(){
+  let file=document.getElementById("csvFile").files[0];
+  if(!file){ uploadMsg.textContent="Please select file"; return;}
+  let reader=new FileReader();
+  reader.onload=function(){
+    fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:`action=uploadCSV&data=${encodeURIComponent(reader.result)}&mode=${mode.value}`})
+    .then(r=>r.json()).then(res=>{uploadMsg.textContent=res.message; loadDashboard(); loadRecords();});
+  }
+  reader.readAsText(file);
+}
+
+/******** EXCEL ********/
+function downloadExcel(){
+  fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"action=excel"})
+  .then(r=>r.json()).then(res=>{
+    const blob=new Blob([res.csv],{type:"text/csv"});
+    const link=document.createElement("a");
+    link.href=URL.createObjectURL(blob);
+    link.download=res.filename;
+    link.click();
+  });
+}
+
+/******** PDF *********/
+function generateReport(){
+  let d = rdate.value;
+  if(!d){ pdfMsg.textContent="Select Date"; return; }
+
+  fetch(GAS_URL, {
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:`action=pdf&date=${d}`
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(!res.success){
+      pdfMsg.textContent = res.message;
+      return;
+    }
+
+    const binary = atob(res.data);
+    const bytes = new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+
+    const blob = new Blob([bytes], {type:"application/pdf"});
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = res.filename;
+    link.click();
+  });
+}
+
+
+/******** LIST & SEARCH *********/
+let allData = [];
+
+/******** LOAD RECORDS ********/
+function loadRecords(){
+  fetch(GAS_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:"action=list"
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    allData = res.rows;
+    display(allData);
+  });
+}
+
+/******** DATE FORMATTER ********/
+function formatDate(d){
+  if(!d) return "";
+
+  // Case-1: ISO Format (contains 'T')
+  if (d.includes("T")) {
+    let dt = new Date(d);
+    let dd = ("0" + dt.getDate()).slice(-2);
+    let mm = ("0" + (dt.getMonth() + 1)).slice(-2);
+    let yy = dt.getFullYear();
+    return dd + "-" + mm + "-" + yy;
+  }
+
+  // Case-2: Standard yyyy-mm-dd format
+  let p = d.split("-");
+  if (p.length === 3) {
+    return p[2] + "-" + p[1] + "-" + p[0];
+  }
+
+  return d;
+}
+
+/******** DISPLAY TABLE ********/
+function display(arr){
+  let h = `
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Faculty</th>
+        <th>College</th>
+        <th>Session</th>
+        <th>Phone</th>
+        <th>Comments</th>
+      </tr>
+  `;
+
+  arr.forEach(r=>{
+    h += `
+      <tr>
+        <td>${formatDate(r[0])}</td>
+        <td>${r[1]}</td>
+        <td>${r[2]}</td>
+        <td>${r[3]}</td>
+        <td>${r[4]}</td>
+        <td>${r[6]}</td>
+      </tr>
+    `;
+  });
+
+  h += "</table>";
+  records.innerHTML = h;
+}
+
+/******** SEARCH FILTER ********/
+function filterRecords(){
+  let k = search.value.toLowerCase();
+  display(
+    allData.filter(r =>
+      r[1].toLowerCase().includes(k) ||
+      r[2].toLowerCase().includes(k)
+    )
+  );
+}
+
+/******** PAGE ONLOAD ********/
+window.onload = ()=>{
+  loadDashboard();
+  loadRecords();
+};
+
+
+</script>
+</body>
+</html>

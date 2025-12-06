@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<style>
+body{
+  font-family:Poppins;
+  text-align:center;
+  padding:40px;
+  background:#f2f4f8;
+}
+h2{font-weight:600;}
+.container{margin-top:25px;}
+button{
+  width:80%;
+  padding:16px;
+  margin:10px;
+  border:0;
+  border-radius:10px;
+  font-size:18px;
+  font-weight:600;
+  cursor:pointer;
+}
+.admin{background:#007bff;color:white;}
+.faculty{background:#00c567;color:white;}
+.logout{background:#ff4757;color:white;}
+</style>
+</head>
+<body>
+
+<h2>Welcome to Call Duty System</h2>
+
+<div class="container">
+  <button class="admin" onclick="goAdmin()">Admin Panel</button><br>
+  <button class="faculty" onclick="goFaculty()">Faculty Dashboard</button><br>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<script>
+function goAdmin(){ window.location="admin.html"; }
+function goFaculty(){ window.location="faculty.html"; }
+function logout(){
+  sessionStorage.clear();
+  window.location="index.html";
+}
+</script>
+
+</body>
+</html>
