@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,17 +84,18 @@ input,select{
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:14px;
+  min-width:650px;   /* forcing scroll table */
 }
-th{
-  background:#e2e8f0;
-  font-weight:700;
-}
+
 td,th{
-  border:1px solid #dcdfe4;
   padding:6px;
+  border:1px solid #d4d4d4;
 }
-tr:nth-child(even){background:#f8fafc;}
+
+@media(max-width:600px){
+  table{font-size:13px;}
+}
+
 
 /********************* RESPONSIVE **********************/
 @media(max-width:450px){
@@ -282,50 +283,39 @@ function formatDate(d){
 /******** DISPLAY TABLE ********/
 function display(arr){
   let h = `
-    <table>
-      <tr>
-        <th>Date</th>
-        <th>Faculty</th>
-        <th>College</th>
-        <th>Session</th>
-        <th>Phone</th>
-        <th>Comments</th>
-      </tr>
+    <div style="overflow-x:auto;">
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>Faculty</th>
+          <th>College</th>
+          <th>Session</th>
+          <th>Phone</th>
+          <th>Comments</th>
+        </tr>
   `;
 
   arr.forEach(r=>{
     h += `
-      <tr>
-        <td>${formatDate(r[0])}</td>
-        <td>${r[1]}</td>
-        <td>${r[2]}</td>
-        <td>${r[3]}</td>
-        <td>${r[4]}</td>
-        <td>${r[6]}</td>
-      </tr>
+        <tr>
+          <td>${formatDate(r[0])}</td>
+          <td>${r[1]}</td>
+          <td>${r[2]}</td>
+          <td>${r[3]}</td>
+          <td>${r[4]}</td>
+          <td>${r[6]}</td>
+        </tr>
     `;
   });
 
-  h += "</table>";
+  h += `
+      </table>
+    </div>
+  `;
+
   records.innerHTML = h;
 }
 
-/******** SEARCH FILTER ********/
-function filterRecords(){
-  let k = search.value.toLowerCase();
-  display(
-    allData.filter(r =>
-      r[1].toLowerCase().includes(k) ||
-      r[2].toLowerCase().includes(k)
-    )
-  );
-}
-
-/******** PAGE ONLOAD ********/
-window.onload = ()=>{
-  loadDashboard();
-  loadRecords();
-};
 
 
 </script>
