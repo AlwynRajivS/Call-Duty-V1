@@ -178,6 +178,7 @@ function loadData(){
 
   let p=d.split("-");
   d=p[2]+"-"+p[1]+"-"+p[0];
+sessionStorage.setItem("selectedDate", d);
 
   fetch(GAS_URL,{
     method:"POST",
@@ -197,6 +198,7 @@ function render(rows){
 
   rows.forEach(r=>{
     let status=(r.comments && r.comments.trim()!=="")?"done":"pending";
+let dutyDate = sessionStorage.getItem("selectedDate");
 
     html+=`
     <div class="card ${status}">
