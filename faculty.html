@@ -83,7 +83,12 @@ h3{
   font-size:12px;
   margin:2px 0;
 }
-
+.dLabel{
+  font-size:14px;
+  font-weight:600;
+  color:#334155;
+  margin-right:6px;
+}
 /* BUTTONS */
 .btn{
   padding:6px 8px;
@@ -156,6 +161,7 @@ textarea{
 
 <!-- DATE + LOGOUT in same row -->
 <div class="topBar">
+  <label class="dLabel">Select Date</label>
   <input type="date" id="date" onchange="loadData()">
   <button class="logout" onclick="window.location='index.html'">Logout</button>
 </div>
@@ -230,4 +236,5 @@ function save(row){
 
 </body>
 </html>
+
 
