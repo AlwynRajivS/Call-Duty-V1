@@ -205,12 +205,15 @@ function render(rows){
       <div class="info"><b>Phone:</b> ${r.phone}</div>
 
       <a class="btn callBtn" href="tel:${r.phone}">📞 Call</a>
+
+let dutyDate = r.d || r.Date || r.date || r.Duty_Date || r.examDate || r.hallDate || "";
+
       <a class="btn waBtn"
 href="https://wa.me/91${r.phone}?text=${encodeURIComponent(
 `🙏 Respected ${r.faculty},
 Greetings from Kamaraj College of Engineering and Technology (CoE Office).
 
-🗓️ On ${r.d}, during the ${r.session} session, you have been allotted the Hall Superintendent duty.
+🗓️ On ${r.dutyDate}, during the ${r.session} session, you have been allotted the Hall Superintendent duty.
 
 📌 Kindly confirm your availability by replying to this message.
 
