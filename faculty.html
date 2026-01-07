@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -31,6 +31,7 @@ body{
   justify-content:space-between;
   align-items:center;
   margin-bottom:12px;
+  gap:8px;
 }
 label{
   font-weight:600;
@@ -44,6 +45,7 @@ label{
   border:1px solid #cbd5f5;
   font-size:14px;
   width:60%;
+   flex:1;
 }
 
 /* LOGOUT */
@@ -56,7 +58,7 @@ label{
   font-size:14px;
   cursor:pointer;
   font-weight:600;
-  width:30%;
+  width:20%;
 }
 
 /* CARD */
@@ -160,6 +162,7 @@ textarea{
 @media(max-width:450px){
   .topBar{
     flex-direction:column;
+     align-items:stretch;
     gap:8px;
   }
   #date, .logout{
@@ -178,6 +181,8 @@ textarea{
 <div class="topBar">
   <label class="dLabel">Select Exam Date </label>
   <input type="date" id="date" onchange="loadData()">
+   <button id="pdfBtn" class="logout" style="background:#16a34a;display:none"
+   onclick="downloadPDF()">Report</button>
   <button class="logout" onclick="window.location='index.html'">Logout</button>
 </div>
 
@@ -185,7 +190,7 @@ textarea{
 
 <script>
 const user = JSON.parse(sessionStorage.getItem("user"));
-const GAS_URL = "https://script.google.com/macros/s/AKfycby3Y3kynSUure4Ztwlglf4bEAxigD6PVaSV6uVDeTzAGKVxJt9ZK6pdFAsdHVeneb-3/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycby4wz5daoEG7klUARtet4Lzk2DlO6yEUENng6C2XYUvFc45t2PjrppUAWuK1CjRJ-k/exec";
 
 function loadData(){
   let d=document.getElementById("date").value;
@@ -193,7 +198,7 @@ function loadData(){
 
   let p=d.split("-");
   d=p[2]+"-"+p[1]+"-"+p[0];
-sessionStorage.setItem("selectedDate", d);
+  sessionStorage.setItem("selectedDate", d);
 
   fetch(GAS_URL,{
     method:"POST",
@@ -205,19 +210,28 @@ sessionStorage.setItem("selectedDate", d);
 }
 
 function render(rows){
-  let html="";
+  let html = "";
+  let completed = true;   // 🔥 NEW: assume completed first
+
   if(!rows.length){
-    document.getElementById("content").innerHTML="<p>No Call Duty Assigned</p>";
+    document.getElementById("content").innerHTML =
+      "<p>No Call Duty Assigned</p>";
+    document.getElementById("pdfBtn").style.display = "none";
     return;
   }
 
   rows.forEach(r=>{
-    let status=(r.comments && r.comments.trim()!=="")?"done":"pending";
+    let status = (r.comments && r.comments.trim()!=="") ? "done" : "pending";
+
+    // 🔥 NEW: if any comment missing → NOT completed
+    if(!r.comments || r.comments.trim()===""){
+      completed = false;
+    }
 
     // 🔥 Get selected date
     let dutyDate = sessionStorage.getItem("selectedDate");
 
-    html+=`
+    html += `
     <div class="card ${status}">
       <h3>${r.faculty} (${r.session})</h3>
       <div class="info"><b>College:</b> ${r.college}</div>
@@ -226,7 +240,7 @@ function render(rows){
       <a class="btn callBtn" href="tel:${r.phone}">📞 Call</a>
 
       <a class="btn waBtn"
-href="https://wa.me/91${r.phone}?text=${encodeURIComponent(
+        href="https://wa.me/91${r.phone}?text=${encodeURIComponent(
 `🙏 Respected ${r.faculty},
 Greetings from Kamaraj College of Engineering and Technology (CoE Office).
 
@@ -235,14 +249,11 @@ Greetings from Kamaraj College of Engineering and Technology (CoE Office).
 📌 Kindly confirm your availability by replying to this message.
 
 👍 Thank you.`
-)}"
-target="_blank">
-💬 WhatsApp
-</a>
+        )}"
+        target="_blank">💬 WhatsApp</a>
 
-
-<a class="btn smsBtn"
-  href="sms:91${r.phone}?&body=${encodeURIComponent(
+      <a class="btn smsBtn"
+        href="sms:91${r.phone}?&body=${encodeURIComponent(
 `Respected ${r.faculty},
 Greetings from Kamaraj College of Engineering and Technology (CoE Office).
 
@@ -251,10 +262,7 @@ On ${dutyDate}, during the ${r.session} session, you have been allotted the Hall
 Kindly confirm your availability by replying to this message.
 
 Thank you.`
-)}">
-  📩 SMS
-</a>
-
+        )}">📩 SMS</a>
 
       <textarea id="c${r.row}">${r.comments||""}</textarea>
       <button class="saveBtn" onclick="save(${r.row})">Save</button>
@@ -262,8 +270,13 @@ Thank you.`
     </div>`;
   });
 
-  document.getElementById("content").innerHTML=html;
+  document.getElementById("content").innerHTML = html;
+
+  // 🔥 NEW: Enable / Disable PDF button
+  document.getElementById("pdfBtn").style.display =
+    completed ? "block" : "none";
 }
+
 
 
 function save(row){
@@ -280,6 +293,28 @@ function save(row){
     m.textContent="Saved Successfully!";
     setTimeout(()=>m.textContent="",2000);
     loadData();
+  });
+}
+
+  
+ function downloadPDF(){
+  let d=sessionStorage.getItem("selectedDate");
+
+  fetch(GAS_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:`action=pdf&date=${d}&email=${user.email}`
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(!res.success){
+      alert(res.message);
+      return;
+    }
+    let a=document.createElement("a");
+    a.href="data:application/pdf;base64,"+res.data;
+    a.download=res.filename;
+    a.click();
   });
 }
 </script>
